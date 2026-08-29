@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trespass"
+version = "0.1.0"
+description = "Prove your tenants can't read each other's data. A formal analyzer for Postgres/Supabase row-level security."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Bhargav Raghavendra" }]
+keywords = ["postgres", "supabase", "rls", "security", "authorization", "formal-methods", "smt", "static-analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
+# Runtime dependencies: none. The solver is written from scratch, on purpose.
+dependencies = []
+
+[project.optional-dependencies]
+# Only needed to run the test suite's differential and dynamic checks.
+dev = ["pytest>=8", "pytest-cov", "z3-solver>=4.12", "ruff", "mypy"]
+
+[project.scripts]
+trespass = "trespass.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bhargavraghavendra/trespass"
+Documentation = "https://github.com/bhargavraghavendra/trespass#readme"
+Issues = "https://github.com/bhargavraghavendra/trespass/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trespass"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/trespass"]
+warn_unused_ignores = true
