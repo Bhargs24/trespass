@@ -89,6 +89,29 @@ trespass check schema.sql --fail-on unknown   # also fail on undecided policies
 trespass check schema.sql --no-default-grants # ignore Supabase's default grants
 ```
 
+### Gate your pull requests
+
+Drop this in `.github/workflows/authz.yml` to block a merge that breaks tenant
+isolation:
+
+```yaml
+name: authz
+on: pull_request
+jobs:
+  trespass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install trespass
+      - run: trespass check supabase/migrations/ --intent app.intent
+```
+
+A proven hole exits non-zero and fails the check. Add `--sarif` and upload the
+output with `github/codeql-action/upload-sarif` to see each finding inline on the
+diff.
+
 ### Intent: the part that makes verdicts possible
 
 Without any configuration, `trespass` infers likely ownership from column names (`user_id` looks owned, `org_id` looks tenant-scoped) and runs a conservative pass — enough to catch the unconditional disasters (missing RLS, `using (true)`, anonymous writes), while reporting anything ambiguous as `UNKNOWN` rather than crying wolf.
