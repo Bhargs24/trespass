@@ -25,6 +25,8 @@ Every change keeps three things true:
 ## Good first issues
 
 - More policy patterns in `examples/` (both directions).
-- Widening the modeled fragment (e.g. `IS DISTINCT FROM`) — with matching
-  differential coverage.
+- Widening the modeled fragment (e.g. `EXISTS` over a simple membership table)
+  — with matching differential coverage.
+- Intent-level *exceptions*: a way to declare that an admin role or function is
+  an intended escape hatch, so `or is_admin()` policies can get hard verdicts.
 - A `--fix` mode that rewrites a leaky policy to match the intent.

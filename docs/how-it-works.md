@@ -55,19 +55,36 @@ Strip the syntax from real RLS policies and what remains is small:
 - **equalities** between columns, session values (`auth.uid()`), literals, and
   JSON claims (`auth.jwt() ->> 'org_id'`);
 - **null tests** (`IS NULL`, `IS NOT NULL`);
+- **boolean tests** (`IS [NOT] TRUE / FALSE / UNKNOWN`) — two-valued projections
+  of a three-valued formula, which is exactly why policies use them on nullable
+  boolean columns;
+- **null-safe equality** (`IS [NOT] DISTINCT FROM`), desugared into null tests
+  and equality;
 - **boolean structure** (`AND`, `OR`, `NOT`);
-- **`IN` lists**, which are just disjunctions of equalities.
+- **`IN` lists**, which are just disjunctions of equalities;
+- **scalar subselects with no `FROM` clause** — `(select auth.uid())`, the
+  initplan idiom Supabase's docs recommend, evaluates to its inner expression
+  and is modeled as such.
 
 That is quantifier-free first-order logic over the theory of equality with
 uninterpreted functions (**QF_UF** / EUF), plus an explicit `NULL` and Kleene
 evaluation. It is decidable, and the formulas are tiny.
 
-Anything outside the fragment — an inequality, arithmetic, a subquery — is not
-forced into it. It becomes an **opaque atom**: a boolean the solver may set
-freely. Findings that depend on an opaque atom are reported as `UNKNOWN`, and a
-`VULNERABLE` verdict is only issued when the counterexample stands on modeled
-atoms alone. This is how the tool stays sound in both directions: it never proves
-safety it doesn't have, and never claims an exploit it can't demonstrate.
+Anything outside the fragment — an inequality, arithmetic, a real subquery — is
+not forced into it. A predicate becomes an **opaque atom** the solver may set
+freely; an unmodeled *value* becomes a marked term. Two occurrences of the same
+source text share one symbol; two different texts never do (sharing a symbol
+between different predicates would let `X AND NOT X` fake an isolation proof).
+
+Verdicts then follow one rule. `ISOLATED` is only claimed when the solver
+exhausted every model — opaque atoms included, set adversarially. `VULNERABLE`
+is only claimed when the counterexample stands on modeled atoms and concrete row
+values (a boolean column being `true` is a row that can really exist, and is
+reported as an explicit precondition). A counterexample that needs an unmodeled
+predicate to hold, or an unmodeled value to take a convenient shape — a subquery
+that might be correlated with the caller's session, say — is reported as
+`UNKNOWN` instead. This is how the tool stays sound in both directions: it never
+proves safety it doesn't have, and never claims an exploit it can't demonstrate.
 
 ## The decision procedure
 

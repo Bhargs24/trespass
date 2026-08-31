@@ -58,10 +58,13 @@ Broken access control is also the class every existing scanner **structurally ca
 ## Install
 
 ```bash
-pip install trespass          # from PyPI
-# or, from source:
 pipx install git+https://github.com/Bhargs24/trespass
+# or into an existing environment:
+pip install git+https://github.com/Bhargs24/trespass
 ```
+
+The distribution name on PyPI is `trespass-rls` (the bare name belongs to an
+unrelated project); the CLI and import name are `trespass` either way.
 
 **Zero runtime dependencies.** The solver, the SQL parser, and the report renderer are all written from scratch on the standard library. `git clone && python -m trespass` works on any machine, forever. (Z3 and Postgres are used only to *test* the tool — see [Correctness](#correctness-three-independent-checks).)
 
@@ -104,7 +107,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install trespass
+      - run: pip install git+https://github.com/Bhargs24/trespass
       - run: trespass check supabase/migrations/ --intent app.intent
 ```
 
@@ -210,9 +213,10 @@ vs. Postgres ✓       the verdicts match a real database
 
 Honesty is the point of the tool, so:
 
-- It models equality-based policies precisely. Inequalities (`<`, `>`), arithmetic, and subqueries (`EXISTS`, `IN (SELECT …)`) become opaque atoms — findings that depend on them are `UNKNOWN`, never a false proof.
+- It models equality, null tests, boolean tests (`IS [NOT] TRUE / FALSE / UNKNOWN`), null-safe equality (`IS [NOT] DISTINCT FROM`), and the scalar-subselect idiom `(select auth.uid())` precisely. Inequalities (`<`, `>`), arithmetic, and real subqueries (`EXISTS`, `IN (SELECT …)`, correlated subselects) become opaque atoms — findings that depend on them are `UNKNOWN`, never a false proof and never a fabricated exploit.
+- The intent language has no way to declare *intended exceptions* yet (an admin role, a moderation function). A policy with a deliberate `or is_admin()` escape hatch reports as `UNKNOWN` under an owner-only intent rather than passing.
 - It reasons about a single row at a time, which is the right model for tenant isolation but not for aggregate leaks.
-- It assumes a standard Supabase exposure model (PostgREST + the default `anon` / `authenticated` grants). Turn that off with `--no-default-grants` to rely only on grants written in your SQL.
+- It assumes a standard Supabase exposure model (PostgREST + the default `anon` / `authenticated` grants on the `public` schema). Turn that off with `--no-default-grants` to rely only on grants written in your SQL.
 - It reads DDL. It does not connect to your database, and it never needs credentials.
 
 None of these produce false alarms — they produce `UNKNOWN`, which is the tool telling you where it stopped being sure.
@@ -226,7 +230,7 @@ git clone https://github.com/Bhargs24/trespass
 cd trespass
 pip install -e ".[dev]"
 
-pytest                 # 440+ tests, ~6s (Postgres tests skip without a DSN)
+pytest                 # 460+ tests, ~5s (Postgres tests skip without a DSN)
 ruff check src tests   # lint
 mypy                   # strict type-checking, zero errors
 

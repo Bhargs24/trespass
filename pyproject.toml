@@ -3,8 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "trespass"
-version = "0.1.0"
+# Distribution name; the import package and CLI are both `trespass`.
+# (The bare name `trespass` on PyPI belongs to an unrelated project.)
+name = "trespass-rls"
+version = "0.2.0"
 description = "Prove your tenants can't read each other's data. A formal analyzer for Postgres/Supabase row-level security."
 readme = "README.md"
 license = "MIT"
