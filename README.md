@@ -60,7 +60,7 @@ Broken access control is also the class every existing scanner **structurally ca
 ```bash
 pip install trespass          # from PyPI
 # or, from source:
-pipx install git+https://github.com/bhargavraghavendra/trespass
+pipx install git+https://github.com/Bhargs24/trespass
 ```
 
 **Zero runtime dependencies.** The solver, the SQL parser, and the report renderer are all written from scratch on the standard library. `git clone && python -m trespass` works on any machine, forever. (Z3 and Postgres are used only to *test* the tool — see [Correctness](#correctness-three-independent-checks).)
@@ -222,7 +222,7 @@ None of these produce false alarms — they produce `UNKNOWN`, which is the tool
 ## Development
 
 ```bash
-git clone https://github.com/bhargavraghavendra/trespass
+git clone https://github.com/Bhargs24/trespass
 cd trespass
 pip install -e ".[dev]"
 

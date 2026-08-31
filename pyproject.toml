@@ -30,9 +30,9 @@ dev = ["pytest>=8", "pytest-cov", "z3-solver>=4.12", "ruff", "mypy"]
 trespass = "trespass.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/bhargavraghavendra/trespass"
-Documentation = "https://github.com/bhargavraghavendra/trespass#readme"
-Issues = "https://github.com/bhargavraghavendra/trespass/issues"
+Homepage = "https://github.com/Bhargs24/trespass"
+Documentation = "https://github.com/Bhargs24/trespass#readme"
+Issues = "https://github.com/Bhargs24/trespass/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trespass"]
