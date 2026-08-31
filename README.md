@@ -1,5 +1,9 @@
 # trespass
 
+[![ci](https://github.com/Bhargs24/trespass/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhargs24/trespass/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/Bhargs24/trespass/blob/main/pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/Bhargs24/trespass/blob/main/LICENSE)
+
 **Prove your tenants can't read each other's data.**
 
 `trespass` is a formal analyzer for Postgres / Supabase [row-level security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html). Point it at your schema and it either **proves** that no user can reach another user's rows, or hands you the **exact query** that shows they can.
