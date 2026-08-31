@@ -48,6 +48,13 @@ _CASES = [
     ("user_id = auth.uid()", "owner", False),
     ("user_id = auth.uid() or is_public", "owner", True),
     ("user_id = auth.uid() or user_id is null", "owner", False),
+    # The initplan idiom Supabase's docs recommend -- must not be a false alarm.
+    ("(select auth.uid()) = user_id", "owner", False),
+    # Boolean tests are two-valued; a nullable flag behind IS TRUE still leaks.
+    ("user_id = auth.uid() or (is_public is true)", "owner", True),
+    # Null-safe equality, both directions.
+    ("user_id is not distinct from auth.uid()", "owner", False),
+    ("user_id = auth.uid() or (is_public is distinct from false)", "owner", True),
 ]
 
 
@@ -59,7 +66,9 @@ def conn():  # type: ignore[no-untyped-def]
 
 
 @pytest.mark.parametrize("using,level,expect_leak", _CASES, ids=[c[0] for c in _CASES])
-def test_solver_matches_postgres(conn, using: str, level: str, expect_leak: bool) -> None:  # type: ignore[no-untyped-def]
+def test_solver_matches_postgres(  # type: ignore[no-untyped-def]
+    conn, tmp_path, using: str, level: str, expect_leak: bool
+) -> None:
     attacker, victim = uuid.uuid4(), uuid.uuid4()
     table = "t_" + uuid.uuid4().hex[:8]
 
@@ -89,10 +98,8 @@ def test_solver_matches_postgres(conn, using: str, level: str, expect_leak: bool
     assert leaked is expect_leak, f"Postgres disagreed with the test's own expectation for {using!r}"
 
     # --- trespass's prediction on the same policy, with a declared owner intent ---
-    intent_sql = f"[{table}]\ntenant = user_id\nselect = {level}\n"
-    intent_path = f"/tmp/{table}.intent"
-    with open(intent_path, "w", encoding="utf-8") as fh:
-        fh.write(intent_sql)
+    intent_path = tmp_path / f"{table}.intent"
+    intent_path.write_text(f"[{table}]\ntenant = user_id\nselect = {level}\n", encoding="utf-8")
     report = analyze(schema_sql, load_intent(intent_path))
     predicted_leak = bool(report.vulnerabilities)
 
