@@ -36,8 +36,8 @@ create or replace function auth.role() returns text language sql stable as $$
 create or replace function auth.jwt() returns jsonb language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb) $$;
 do $$ begin
-  if not exists (select from pg_roles where rolname = 'app_user') then
-    create role app_user nologin;
+  if not exists (select from pg_roles where rolname = 'authenticated') then
+    create role authenticated nologin;
   end if;
 end $$;
 """
@@ -68,10 +68,10 @@ def test_solver_matches_postgres(conn, using: str, level: str, expect_leak: bool
         f"user_id uuid not null, is_public boolean default false);\n"
         f"alter table {table} enable row level security;\n"
         f"alter table {table} force row level security;\n"
-        f"create policy p on {table} for select to app_user using ({using});"
+        f"create policy p on {table} for select to authenticated using ({using});"
     )
     conn.execute(schema_sql)
-    conn.execute(f"grant select on {table} to app_user;")
+    conn.execute(f"grant select on {table} to authenticated;")
     conn.execute(
         f"insert into {table} (user_id, is_public) values (%s, false), (%s, true);",
         (attacker, victim),
@@ -79,7 +79,7 @@ def test_solver_matches_postgres(conn, using: str, level: str, expect_leak: bool
 
     # --- ground truth: what does Postgres actually allow the attacker to read? ---
     with conn.cursor() as cur:
-        cur.execute("set role app_user;")
+        cur.execute("set role authenticated;")
         cur.execute("select set_config('request.jwt.claim.sub', %s, false);", (str(attacker),))
         cur.execute("select set_config('request.jwt.claim.role', 'authenticated', false);")
         cur.execute(f"select count(*) from {table} where user_id = %s;", (victim,))
