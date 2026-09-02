@@ -62,12 +62,14 @@ Broken access control is also the class every existing scanner **structurally ca
 ## Install
 
 ```bash
-pipx install git+https://github.com/Bhargs24/trespass
-# or into an existing environment:
-pip install git+https://github.com/Bhargs24/trespass
+pip install trespass-rls
 ```
 
-The distribution name on PyPI is `trespass-rls` (the bare name belongs to an
+```bash
+pipx install trespass-rls    # or isolated, if you prefer
+```
+
+The distribution is `trespass-rls` (the bare name on PyPI belongs to an
 unrelated project); the CLI and import name are `trespass` either way.
 
 **Zero runtime dependencies.** The solver, the SQL parser, and the report renderer are all written from scratch on the standard library. `git clone && python -m trespass` works on any machine, forever. (Z3 and Postgres are used only to *test* the tool — see [Correctness](#correctness-three-independent-checks).)
@@ -111,7 +113,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install git+https://github.com/Bhargs24/trespass
+      - run: pip install trespass-rls
       - run: trespass check supabase/migrations/ --intent app.intent
 ```
 
