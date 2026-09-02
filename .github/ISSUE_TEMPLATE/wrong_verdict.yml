@@ -1,0 +1,26 @@
+name: Wrong verdict
+description: trespass proved something isolated that leaks, flagged something safe, or crashed on your schema
+labels: [verdict]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: trespass version
+      placeholder: "trespass 0.2.0 (pip show trespass-rls)"
+    validations:
+      required: true
+  - type: textarea
+    id: schema
+    attributes:
+      label: The smallest schema that shows it
+      description: CREATE TABLE + policies (and your .intent file, if any). Strip anything private — column names can be renamed.
+      render: sql
+    validations:
+      required: true
+  - type: textarea
+    id: got
+    attributes:
+      label: What trespass said, and what is actually true
+      description: Paste the verdict output, then say what a real Postgres does with that policy.
+    validations:
+      required: true

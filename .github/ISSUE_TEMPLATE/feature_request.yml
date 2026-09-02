@@ -1,0 +1,15 @@
+name: Feature request
+description: A policy shape it should model, an intent it cannot express, an output it should add
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The policy or workflow it cannot handle today
+      description: Ideally with the SQL that comes back UNKNOWN, or the intent you could not write.
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: What good would look like
