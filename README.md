@@ -72,6 +72,31 @@ pipx install trespass-rls    # or isolated, if you prefer
 The distribution is `trespass-rls` (the bare name on PyPI belongs to an
 unrelated project); the CLI and import name are `trespass` either way.
 
+### Try it in 60 seconds
+
+No Supabase project needed — paste this and watch it find (and prove) the hole
+from the demo above:
+
+```bash
+cat > demo-schema.sql <<'SQL'
+create table documents (
+  id uuid primary key,
+  user_id uuid not null,
+  is_public boolean
+);
+alter table documents enable row level security;
+create policy read_docs on documents for select
+  to authenticated using (user_id = auth.uid() or is_public);
+SQL
+printf '[documents]\ntenant = user_id\nselect = owner\n' > app.intent
+trespass check demo-schema.sql --intent app.intent
+```
+
+Now change the policy to `using (user_id = auth.uid())` and run it again:
+**`1 proved isolated`** — the same solver that found the exploit now proves
+no caller can reach another user's rows. Then point it at your real project:
+`trespass check supabase/migrations/`.
+
 **Zero runtime dependencies.** The solver, the SQL parser, and the report renderer are all written from scratch on the standard library. `git clone && python -m trespass` works on any machine, forever. (Z3 and Postgres are used only to *test* the tool — see [Correctness](#correctness-three-independent-checks).)
 
 Requires Python 3.10+.
